@@ -32,12 +32,12 @@
 			<!-- post details -->
 			<div class="category"><?php the_category(' '); ?></div>
             
+            <div itemprop="author" content="<?php get_author_posts_url( get_the_author_meta( 'ID' ) )?>"><?php _e( 'Edited by', 'altgratis' ); ?> <?php the_author_posts_link(); ?></div>
+            
             <div itemprop="datePublished" content="<?php echo get_the_date('c'); ?>"><span class="date"><?php the_time('F j, Y'); ?> <?php the_time('g:i a'); ?></span></div>
             
             <div class="tags"><?php the_tags( __( 'Tags:<ul class="tags"><li>', 'altgratis' ), '</li><li>', '</li></ul>'); // Separated by commas with a line break at the end ?></div>	
             
-			<!-- <span class="author"><?php _e( 'Published by', 'altgratis' ); ?> <?php the_author_posts_link(); ?></span>
-			<span class="comments"><?php if (comments_open( get_the_ID() ) ) comments_popup_link( __( 'Leave your thoughts', 'altgratis' ), __( '1 Comment', 'altgratis' ), __( '% Comments', 'altgratis' )); ?></span> -->
 			<!-- /post details -->
 
 			<?php the_content(); // Dynamic Content ?>

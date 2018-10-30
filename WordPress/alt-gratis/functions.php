@@ -20,10 +20,32 @@
     $content_width = 700;
 }*/
 
+function buddydev_set_default_nav() {
+ 
+    bp_core_new_nav_default (
+        array(
+            'parent_slug'       => bp_get_settings_slug(),
+            'subnav_slug'       => 'notifications',
+            'screen_function'   => 'bp_settings_screen_notification'
+        )
+    );
+	
+	if ( bp_use_wp_admin_bar() ) {
+		add_action( 'wp_before_admin_bar_render', create_function(
+		'', 'global $wp_admin_bar; $wp_admin_bar->remove_menu( "my-account-settings-general" );' ) );
+	}
+}
+
+if (function_exists('bp_core_new_nav_default')){
+	add_action( 'bp_setup_nav', 'buddydev_set_default_nav', 20 );
+}
+
 if (function_exists('add_theme_support'))
 {
     // Add Menu Support
     add_theme_support('menus');
+
+	add_theme_support('html5', array('caption'));
 
     // Add Thumbnail Theme Support
     add_theme_support('post-thumbnails');
@@ -59,6 +81,8 @@ if (function_exists('add_theme_support'))
 
     // Enables post and comment RSS feed links to head
     add_theme_support('automatic-feed-links');
+	
+	
 
     // Localisation Support
     load_theme_textdomain('altgratis', get_template_directory() . '/languages');
@@ -93,6 +117,43 @@ function altgratis_nav()
 	);
 }
 
+// log comment approval
+function wpse_comment_moderator_log( $comment ) {
+    global $current_user;
+    get_currentuserinfo();
+
+    update_comment_meta( $comment->comment_ID, 'approved_by', $current_user->user_login );
+}
+
+add_action('load-edit-comments.php', 'wpse64973_load');
+function wpse64973_load()
+{
+    $screen = get_current_screen();
+    add_filter("manage_{$screen->id}_columns", 'wpse64973_add_columns');
+}
+function wpse64973_add_columns($cols)
+{
+    $cols['approved_by'] = __('Approved By', 'wpse64973');
+    return $cols;
+}
+add_action('manage_comments_custom_column', 'wpse64973_column_cb', 10, 2);
+function wpse64973_column_cb($col, $comment_id)
+{
+    // you could expand the switch to take care of other custom columns
+    switch($col)
+    {
+        case 'approved_by':
+            if($t = get_comment_meta( $comment->comment_ID, 'approved_by', true ))
+            {
+                echo esc_html($t);
+            }
+            else
+            {
+                esc_html_e('N/A', 'wpse64973');
+            }
+            break;
+    }
+}
 
 
 // Load HTML5 Blank scripts (header.php)
@@ -129,7 +190,7 @@ function altgratis_styles()
     wp_register_style('normalize', get_template_directory_uri() . '/normalize.css', array(), '1.0', 'all');
     wp_enqueue_style('normalize'); // Enqueue it!
 
-    wp_register_style('altgratis', get_template_directory_uri() . '/style.css', array(), '1.0', 'screen');
+    wp_register_style('altgratis', get_template_directory_uri() . '/style.css', array(), '1.0.9', 'screen');
     wp_enqueue_style('altgratis'); // Enqueue it!
 	
 	wp_register_style('fontawesome', get_template_directory_uri() . '/fonts/font-awesome/css/font-awesome.min.css', array(), '4.4.0'); // Modernizr
@@ -464,6 +525,11 @@ function altgratiscomments($comment, $args, $depth)
 	Actions + Filters + ShortCodes
 \*------------------------------------*/
 
+
+// TEMP
+
+add_filter( 'jetpack_sharing_counts', '__return_false' );
+
 // Add Actions
 add_action('init', 'altgratis_header_scripts'); // Add Custom Scripts to wp_head
 add_action('wp_print_scripts', 'altgratis_conditional_scripts'); // Add Conditional Page Scripts
@@ -474,6 +540,7 @@ add_action('init', 'register_html5_menu'); // Add HTML5 Blank Menu
 add_action('widgets_init', 'my_remove_recent_comments_style'); // Remove inline Recent Comment Styles from wp_head()
 add_action('init', 'altgratis_pagination'); // Add our HTML5 Pagination
 add_action('admin_menu', 'custom_editor_admin_menu'); // custom menu for editors
+add_action( 'comment_unapproved_to_approved', 'wpse_comment_moderator_log' ); // log comment approver
 
 // Remove Actions
 remove_action('wp_head', 'feed_links_extra', 3); // Display the links to the extra feeds such as category feeds
@@ -914,7 +981,7 @@ function cc_slider($atts, $content = null) {
             } else {
                 $ftrdimgs = get_the_post_thumbnail($post->ID, 'slider-thumbnail', array('alt' => get_the_title()));
             }
-            $title = mb_substr(get_the_title(), 0, 65);
+            $title = mb_substr(get_the_title(), 0, 82);
             if ($allow_direct_link == __('yes', 'cc')) {
                 $ftrdimgs = '<a href="#fragment-' . $id . '-' . $i . '" class="allow-dirrect-links" data-url="' . get_permalink($post->ID) . '">' . $ftrdimgs . '<span>' . $title . '</span></a>';
             } else {
@@ -942,6 +1009,89 @@ function cc_slider($atts, $content = null) {
     );
 
     return $tmp . chr(13);
+}
+if( function_exists('bp_is_active')) {
+	//add_action('bp_ajax_querystring','bpdev_exclude_users',20,2);
+	function bpdev_exclude_users($qs=false,$object=false){
+		//list of users to exclude
+		 
+		if($object!='members')//hide for members only
+			return $qs;
+			
+		$excluded_user=bpdev_get_user_ids();//comma separated ids of users whom you want to exclude
+	  
+		
+		$args=wp_parse_args($qs);
+		
+		//check if we are searching for friends list etc?, do not exclude in this case
+		if(!empty($args['user_id']))
+			return $qs;
+		
+		if(!empty($args['exclude']))
+			$args['exclude']=$args['exclude'].','.$excluded_user;
+		else 
+			$args['exclude']=$excluded_user;
+		  
+		$qs=build_query($args);
+	   
+	   
+	   return $qs;
+		
+	}
+	
+	function bpdev_get_user_ids() {
+	  global $wpdb;
+	  $allusers = $wpdb->get_results("SELECT GROUP_CONCAT(user_id) FROM $wpdb->usermeta WHERE meta_key LIKE 'wp_%_capabilities'", "ARRAY_N");
+	  return $allusers[0][0];
+	  //print_r($allusers);
+	  //return implode(",", $allusers);
+	  $users = get_users( array( 'fields' => 'ID' ) );
+	  return $users;
+	}
+}
+
+
+/**
+ * Get a real blog avatar!
+ *  from https://github.com/imath/modal-buddy/blob/master/includes/blogs.php
+ * @since  1.0.0
+ */
+function modal_buddy_get_blog_avatar( $avatar = '', $blog_id = 0, $args = array(), $blog_name = '' ) {
+	global $blogs_template;
+	// Refetch the avatar :( No way to do else
+	if ( ! empty( $blog_id ) && has_site_icon($blog_id) ) {
+		$blog_details = get_blog_details($blog_id ,true);
+		$blog_name = $blog_details->blogname;
+		return sprintf('<a href="%s"><img src="%s" class="avatar group-295-avatar avatar-50 photo" width="50" height="50" alt="Group logo of %s" title="%s"></a>', esc_url($blog_details->siteurl) , esc_url( get_site_icon_url( 180, null, $blog_id  ) ), $blog_name, $blog_name);
+	} else {
+		return $avatar;	
+	}
+	
+}
+add_filter( 'bp_get_blog_avatar', 'modal_buddy_get_blog_avatar', 10, 3 );
+
+add_filter('tiny_mce_before_init','configure_tinymce');
+
+/**
+ * Customize TinyMCE's configuration
+ *
+ * @param   array
+ * @return  array
+ */
+function configure_tinymce($in) {
+  $in['paste_preprocess'] = "function(plugin, args){
+    // Strip all HTML tags except those we have whitelisted
+    var whitelist = 'p,b,strong,i,em,h1,h2,h3,h4,h5,h6,ul,li,ol,table,td,tr,th,tbody,a,img';
+    var stripped = jQuery('<div>' + args.content + '</div>');
+    var els = stripped.find('*').not(whitelist);
+    for (var i = els.length - 1; i >= 0; i--) {
+      var e = els[i];
+      jQuery(e).replaceWith(e.innerHTML);
+    }
+    // Return the clean HTML
+    args.content = stripped.html();
+  }";
+  return $in;
 }
 
 /*
@@ -1130,6 +1280,15 @@ class WP_Google_Search_ALT {
 		
 	}
 }
+
+//Dequeue JavaScripts
+function project_dequeue_unnecessary_scripts() {
+    wp_dequeue_script( 'ck_editor_cdn' );
+        wp_deregister_script( 'ck_editor_cdn' );
+    wp_dequeue_script( 'custom_script' );
+        wp_deregister_script( 'custom_script' );
+}
+add_action( 'wp_enqueue_scripts', 'project_dequeue_unnecessary_scripts', 1000 );
 
 //Init WP_Google_Search class
 $GLOBALS['wp_google_search'] = new WP_Google_Search_ALT();

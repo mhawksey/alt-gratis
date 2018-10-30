@@ -29,8 +29,7 @@
                         <li><a href="https://www.alt.ac.uk/complaints-policy" title="Complaints Policy and Procedure">Complaints Policy</a></li>
                         <li><a href="https://www.alt.ac.uk/equality-and-diversity-policy-statement" title="Equality and Diversity Policy Statement">Equality and Diversity</a></li>
                     </ul>
-                      <p class="social-text"><a href="http://twitter.com/A_L_T" title="Visit ALT on Twitter" target="_blank"><i class="fa fa-twitter-square"></i></a> <a href="https://google.com/+ALTacuk" target="_blank" title="Visit ALT on Google+"><i class="fa fa-google-plus-square"></i></a> <a href="http://www.linkedin.com/company/association-for-learning-technology" target="_blank" title="Visit ALT on LinkedIn"><i class="fa fa-linkedin-square"></i></a> <a href="http://www.youtube.com/user/ClipsFromALT" title="Visit ClipsFromALT on YouTube" target="_blank"><i class="fa fa-youtube-square"></i></a> <a href="/feeds" title="See ALT's RSS Feeds"><i class="fa fa-rss-square"></i></a></p>
-                    <p>Association for Learning Technology | Registered charity number: 1063519<br>Gipsy Lane | Headington | Oxford | OX3 0BP | UK | Tel: +44 (0)1865 484 125</p>
+                      <p class="social-text"><a href="http://twitter.com/A_L_T"  title="Visit ALT on Twitter" target="_blank"><i class="fa fa-twitter-square"></i></a> <a href="https://google.com/+ALTacuk" target="_blank"   title="Visit ALT on Google+"><i class="fa fa-google-plus-square"></i></a> <a href="http://www.linkedin.com/company/association-for-learning-technology" target="_blank"   title="Visit ALT on LinkedIn"><i class="fa fa-linkedin-square"></i></a> <a href="http://www.youtube.com/user/ClipsFromALT" title="Visit ClipsFromALT on YouTube" target="_blank"><i class="fa fa-youtube-square"></i></a> <a href="https://www.flickr.com/photos/PicsFromALT/" title="Visit PicsFromALT on Flickr" target="_blank"><i class="fa fa-flickr"></i></a> <a href="/feeds" title="See ALT's RSS Feeds"><i class="fa fa-rss-square"></i></a></p><p>Association for Learning Technology | Registered charity number: 1160039<br /><a href="mailto:enquiries@alt.ac.uk" style="color:#fff">enquiries@alt.ac.uk</a> | Tel: +44 (0)1865 819 009</p>
                   </div>
                 </div>
             </footer>
@@ -39,5 +38,6 @@
     <a href="#" class="scrolltop" alt="Scroll to the top"><i class="fa fa-chevron-circle-up"></i></a>
   </div>
 		<?php wp_footer(); ?>
+        <?php echo '<!-- CACHE ' . base64_decode(WP_CACHE_KEY_SALT) . ' -->'; ?>
 	</body>
 </html>

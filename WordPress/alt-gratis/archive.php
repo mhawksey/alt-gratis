@@ -14,7 +14,7 @@ if (defined('CONFERENCER_PATH')){
 ?>
 <?php get_header(); ?>
 <?php if (!($is_readerlite)): ?>
-<?php echo (do_shortcode('[alt_slider category__in='.$cat_id.']')); ?>
+<?php //echo (do_shortcode('[alt_slider category__in='.$cat_id.']')); ?>
 <div id="column">
 	<?php get_template_part('loop'); ?>
 </div>
